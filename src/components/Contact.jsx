@@ -1,40 +1,34 @@
 import React, { useState } from 'react';
 
 function Contact() {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    message: ''
-  });
+  const [result, setResult] = useState("");
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
+  const onSubmit = async (event) => {
+    event.preventDefault();
+    setResult("Sending...");
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+    const formData = new FormData(event.target);
+
+    // Add your Web3Forms access key here
+    formData.append("access_key", "4d637aa0-c008-4a4e-a517-76ef9d89e40f");
+
     try {
-      const response = await fetch('https://brave-connection.up.railway.app/api/contact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        body: formData
       });
 
-      if (response.ok) {
-        alert('Message sent successfully');
-        // Optionally reset form data
-        setFormData({ name: '', email: '', message: '' });
+      const data = await response.json();
+
+      if (data.success) {
+        setResult("Form Submitted Successfully");
+        event.target.reset(); // Reset the form after successful submission
       } else {
-        alert('Error sending message');
+        setResult(`Error: ${data.message}`);
       }
     } catch (error) {
-      console.error('Error:', error);
-      alert('Failed to send message');
+      console.error("Submission Error:", error);
+      setResult("Failed to send the message");
     }
   };
 
@@ -42,21 +36,22 @@ function Contact() {
     <section className="py-10">
       <div className="container mx-auto">
         <h2 className="text-3xl font-bold mb-6">Contact Me</h2>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={onSubmit}>
           <div className="mb-4">
             <label htmlFor="name" className="block text-sm font-semibold">Name:</label>
-            <input type="text" id="name" name="name" value={formData.name} onChange={handleChange} className="border rounded w-full py-2 px-3" required />
+            <input type="text" id="name" name="name" className="border rounded w-full py-2 px-3" required />
           </div>
           <div className="mb-4">
             <label htmlFor="email" className="block text-sm font-semibold">Email:</label>
-            <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} className="border rounded w-full py-2 px-3" required />
+            <input type="email" id="email" name="email" className="border rounded w-full py-2 px-3" required />
           </div>
           <div className="mb-4">
             <label htmlFor="message" className="block text-sm font-semibold">Message:</label>
-            <textarea id="message" name="message" value={formData.message} onChange={handleChange} className="border rounded w-full py-2 px-3" rows="4" required></textarea>
+            <textarea id="message" name="message" className="border rounded w-full py-2 px-3" rows="4" required></textarea>
           </div>
           <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">Send Message</button>
         </form>
+        <div className="mt-4 text-sm">{result}</div>
       </div>
     </section>
   );
